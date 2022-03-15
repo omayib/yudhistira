@@ -194,11 +194,15 @@
             
           },
           csvJSON(csv){
-            var lines=csv.split("\n"); this.mataKuliah = [];
+            var lines=csv.split("\n"); 
+            this.mataKuliah = [];
             var headers=lines[0].replace("\r","").replace(" ","_").split(",");
 
             for(var i=1;i<lines.length;i++){
-
+                if(lines[i]===""){
+                console.log("continue")
+                  continue;
+                }
                 var obj = {};
                 var currentline=lines[i].replace("\r","").split(",");
 
