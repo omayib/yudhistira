@@ -39,6 +39,7 @@
       integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p"
       crossorigin="anonymous"
     ></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <!-- end of js here -->
   </head>
   <body>
@@ -48,7 +49,7 @@
       >
         <!-- <img class="me-3" src="/docs/5.1/assets/brand/bootstrap-logo-white.svg" alt="" width="48" height="38"> -->
         <div class="lh-1">
-          <h1 class="h6 mb-0 text-white lh-1">Simulasi Nilai Mahasiswa</h1>
+          <h1 class="h1 mb-0 text-white lh-1">Simulasi Nilai Mahasiswa</h1>
           <small>Prodi Informatika Universitas Amikom Yogyakarta</small>
         </div>
       </div>
@@ -69,69 +70,89 @@
         <h6 class="border-bottom pb-2 mb-0">Data Nilai</h6>
         <table class="table table-bordered">
           <tr>
+            <th width="100px">No</th>
             <th width="100px">Kode</th>
             <th>Mata Kuliah</th>
-            <th>Semester</th>
             <th>Sifat</th>
             <th>SKS</th>
             <th>Nilai</th>
           </tr>
-          <tr v-for="n in mataKuliahOrdered()" :key="n.index">
-            <td class="text-center">{{ n.kode ? n.kode : "-" }}</td>
-            <td>{{ n.nama ? n.nama : "-" }}</td>
-            <td class="text-center">{{ n.semester ? n.semester : "-" }}</td>
-            <td class="text-center">{{ n.sifat ? n.sifat : "-" }}</td>
-            <td class="text-center">{{ n.sks ? n.sks : "-" }}</td>
-            <td class="text-center" v-bind:class="{'bg-danger text-white':n.nilai=='E'}">{{ n.nilai ? n.nilai : "-" }}</td>
+          <tr v-for="(n,idx) in mataKuliah">
+            <td class="text-center">{{ n.No }}</td>
+            <td class="text-center">{{ n.Kode }}</td>
+            <td>{{ n.Mata_Kuliah  }}</td>
+            <td class="text-center">{{ n.Sifat }}</td>
+            <td class="text-center">{{ n.Sks  }}</td>
+            <td class="text-center" v-bind:class="{'bg-danger text-white':n.Nilai=='E','bg-warning text-white':n.Nilai=='D'}">{{ n.Nilai}}</td>
           </tr>
         </table>
-        <!-- <div class="d-flex text-muted pt-3">
-                <svg class="bd-placeholder-img flex-shrink-0 me-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: 32x32" preserveAspectRatio="xMidYMid slice" focusable="false"><title>Placeholder</title><rect width="100%" height="100%" fill="#007bff"></rect><text x="50%" y="50%" fill="#007bff" dy=".3em">32x32</text></svg>
-        
-                <p class="pb-3 mb-0 small lh-sm border-bottom">
-                <strong class="d-block text-gray-dark">@username</strong>
-                Some representative placeholder content, with some information about this user. Imagine this being some sort of status update, perhaps?
-                </p>
-            </div> -->
       </div>
       <div class="my-3 p-3 bg-body rounded shadow-sm" v-show="file">
         <h6 class="border-bottom pb-2 mb-0">Kesimpulan</h6>
         <table class="table table-bordered">
             <tr>
-              <th width="30%">Total SKS Yang Diambil</th>
-              <th width="30%">Matakuliah minimal C</th>
-              <th width="30%">Matakuliah nilai D</th>
+              <th width="20%" style="background-color:white">SKS Wajib</th>
+              <th width="20%" style="background-color:greenyellow">SKS Lulus</th>
+              <th width="20%" style="background-color:red">SKS TIDAK Lulus</th>
+              <th width="20%" style="background-color:yellow">SKS Nilai D</th>
+              <th width="20%" style="background-color:black; color: white;">SKS Kurang</th>
             </tr>
             <tr>
               <td class="text-center">
-                  <b>{{ totalSKS ? totalSKS : "-" }}</b>
+                  <b>{{sksWajib}}</b>
               </td>
               <td class="text-center">
-                <b>{{ minimalC.length }} mata kuliah tidak memenuhi nilai minimal</b>
+                  <b>{{sksLulus}}</b>
               </td>
               <td class="text-center">
-                <b>{{ nilaiDmaksimalSKSMatkul }} mata kuliah (total {{ nilaiDmaksimalSKS }} SKS)</b>
+                <b>{{ sksTidakLulus }}</b>
+              </td>
+              <td class="text-center">
+                <b>{{ prosentaseSksNilaiD }} %</b>
+              </td>
+              <td class="text-center">
+                <b>{{ sksKurang }} </b>
               </td>
             </tr>
             <tr>
+              <td class="text-center">
+                  <span v-if="sksWajib < 120">SKS sifat wajib yang sudah ditempuh minimal 120 SKS.</span>
+                  <span v-else>Memenuhi syarat minimal SKS Wajib sebesar 120 SKS.</span>
+              </td>
                 <td class="text-center">
-                    <span v-if="totalSKS <= 114" class="text-danger">Belum memenuhi dari total minimal yaitu 144 SKS.</span>
+                    <span v-if="totalSKS <= 144">Belum memenuhi dari total minimal yaitu 144 SKS.</span>
                     <span v-else>Memenuhi syarat minimal 144 SKS.</span>
                 </td>
                 <td class="text-center">
-                    <span v-if="minimalC.length" class="text-danger">Terdapat matakuliah dengan nilai minimal harus C, yaitu
-                        <i v-for="c in minimalC" :key="c.index">
-                            {{ c.nama }} ({{ c.nilai ? c.nilai : "-" }}),
-                        </i>
-                    </span>
-                    <span v-else>Memenuhi syarat nilai minimal C pada mata kuliah Pendidikan Kewarganegaraan, Bahasa Indonesia, Agama, Pancasila, Skripsi.</span>
+                    <span>Jumlah SKS yang tidak Lulus. Wajib diulang atau harus di hapus saat Yudisium</span>
                 </td>
                 <td class="text-center">
-                    <span v-if="nilaiDmaksimalSKS >= totalSKS*0.2" class="text-danger">Mata kuliah denngan nilai D melebihi syarat batas minimal, dengan total {{ nilaiDmaksimalSKS }} mata kuliah memiliki nilai D (syarat minimal adalah setidaknya {{ totalSKS*0.2 }}).</span>
+                    <span v-if="prosentaseSksNilaiD > 25" class="text-danger">Mata kuliah denngan nilai D melebihi syarat batas maksimal. Tidak boleh lebih dari 25% dari total SKS yang lulus.</span>
                     <span v-else>Mata kuliah memenuhi syarat.</span>
                 </td>
-              </tr>
+                <td class="text-center">
+                   <span >Jumlah SKS yang harus Anda tempuh berikutnya.</span>
+                </td>
+            </tr>
           </table>
+      </div>
+      <div class="my-3 p-3 bg-body rounded shadow-sm" v-show="file">
+        <h6 class="border-bottom pb-2 mb-0">Matakuliah Wajib Negara</h6>
+        <p> Nilai matakuliah wajib dari Negara, minimal bernilai C</p>
+        <table class="table table-bordered">
+          <tr>
+            <th width="100px">Kode</th>
+            <th>Mata Kuliah</th>
+            <th>Nilai</th>
+            <th>Keterangan</th>
+          </tr>
+          <tr v-for="(n,idx) in mataKuliahWajibNegara">
+            <td class="text-center">{{ n.kode }}</td>
+            <td>{{ n.matkul  }}</td>
+            <td class="text-center" v-bind:class="{'bg-danger text-white':n.nilai=='E','bg-warning text-white':n.nilai=='D'}">{{ n.nilai}}</td>
+            <td class="text-center">{{ n.status  }}</td>
+          </tr>
+        </table>
       </div>
     </main>
     <script>
@@ -151,533 +172,90 @@
           nilaiDmaksimalSKS: 0,
           groupNilai: ["A","B","C"],
           minimalC: [],
-          mataKuliah: [
-            {
-              kode: "ST013",
-              nama: "LINGKUNGAN BISNIS",
-              sifat: "W",
-              sks: 2,
-              semester: 2,
-            },
-            {
-              kode: "ST014",
-              nama: "KOMUNIKASI DATA",
-              sifat: "W",
-              sks: 4,
-              semester: 2,
-            },
-            {
-              kode: "ST015",
-              nama: "STRUKTUR DATA",
-              sifat: "W",
-              sks: 4,
-              semester: 2,
-            },
-            {
-              kode: "ST016",
-              nama: "BAHASA INGGRIS II",
-              sifat: "W",
-              sks: 2,
-              semester: 2,
-            },
-            {
-              kode: "ST019",
-              nama: "SISTEM OPERASI",
-              sifat: "W",
-              sks: 4,
-              semester: 2,
-            },
-            {
-              kode: "ST021",
-              nama: "PEMROGRAMAN",
-              sifat: "W",
-              sks: 2,
-              semester: 2,
-            },
-            {
-              kode: "ST029",
-              nama: "KOMPUTER GRAFIS",
-              sifat: "W",
-              sks: 2,
-              semester: 2,
-            },
-            {
-              kode: "ST160",
-              nama: "HARDWARE/SOFTWARE I",
-              sifat: "W",
-              sks: 2,
-              semester: 2,
-            },
-            {
-              kode: "ST037",
-              nama: "JARINGAN KOMPUTER II",
-              sifat: "K",
-              sks: 4,
-              semester: 4,
-            },
-            {
-              kode: "ST045",
-              nama: "KECERDASAN BUATAN",
-              sifat: "W",
-              sks: 2,
-              semester: 4,
-            },
-            {
-              kode: "ST082",
-              nama: "KECAKAPAN ANTAR PERSONAL",
-              sifat: "W",
-              sks: 2,
-              semester: 4,
-            },
-            {
-              kode: "ST084",
-              nama: "PEMROGRAMAN WEB",
-              sifat: "W",
-              sks: 4,
-              semester: 4,
-            },
-            {
-              kode: "ST091",
-              nama: "ANALISIS DESAIN SISTEM INFORMASI",
-              sifat: "W",
-              sks: 4,
-              semester: 4,
-            },
-            {
-              kode: "ST092",
-              nama: "ALJABAR LINIER DAN MATRIKS",
-              sifat: "W",
-              sks: 2,
-              semester: 4,
-            },
-            {
-              kode: "ST114",
-              nama: "MULTIMEDIA LANJUT",
-              sifat: "K",
-              sks: 4,
-              semester: 4,
-            },
-            {
-              kode: "ST116",
-              nama: "PEMROGRAMAN BASIS DATA",
-              sifat: "K",
-              sks: 4,
-              semester: 4,
-            },
-            {
-              kode: "ST129",
-              nama: "RISET OPERASI",
-              sifat: "W",
-              sks: 2,
-              semester: 4,
-            },
-            {
-              kode: "ST152",
-              nama: "BIG DATA & PREDICTIVE ANALYTICS",
-              sifat: "W",
-              sks: 4,
-              semester: 4,
-            },
-            {
-              kode: "ST050",
-              nama: "MANAJEMEN STRATEGIK",
-              sifat: "W",
-              sks: 2,
-              semester: 6,
-            },
-            {
-              kode: "ST052",
-              nama: "TUGAS PRAKTEK",
-              sifat: "P",
-              sks: 2,
-              semester: 6,
-            },
-            {
-              kode: "ST087",
-              nama: "MANAJEMEN SUMBERDAYA IT",
-              sifat: "W",
-              sks: 2,
-              semester: 6,
-            },
-            {
-              kode: "ST090",
-              nama: "PENDIDIKAN KEWARGANEGARAAN",
-              sifat: "W",
-              sks: 2,
-              semester: 6,
-            },
-            {
-              kode: "ST118",
-              nama: "BASIS DATA LANJUT",
-              sifat: "P",
-              sks: 4,
-              semester: 6,
-            },
-            {
-              kode: "ST119",
-              nama: "KEWIRAUSAHAAN",
-              sifat: "W",
-              sks: 2,
-              semester: 6,
-            },
-            {
-              kode: "ST120",
-              nama: "BAHASA INDONESIA",
-              sifat: "W",
-              sks: 2,
-              semester: 6,
-            },
-            {
-              kode: "ST126",
-              nama: "FILM KARTUN 3D",
-              sifat: "P",
-              sks: 4,
-              semester: 6,
-            },
-            {
-              kode: "ST133",
-              nama: "KEAMANAN JARINGAN",
-              sifat: "P",
-              sks: 4,
-              semester: 6,
-            },
-            {
-              kode: "ST135",
-              nama: "SPECIAL EFFECT",
-              sifat: "P",
-              sks: 2,
-              semester: 6,
-            },
-            {
-              kode: "ST142",
-              nama: "TEKNOLOGI GAME",
-              sifat: "P",
-              sks: 4,
-              semester: 6,
-            },
-            {
-              kode: "ST143",
-              nama: "PERANCANGAN JARINGAN",
-              sifat: "P",
-              sks: 4,
-              semester: 6,
-            },
-            {
-              kode: "ST144",
-              nama: "MEDIA INTERAKTIF",
-              sifat: "P",
-              sks: 2,
-              semester: 6,
-            },
-            {
-              kode: "ST053",
-              nama: "SKRIPSI",
-              sifat: "W",
-              sks: 6,
-              semester: 8,
-            },
-            {
-              kode: "ST001",
-              nama: "PENDIDIKAN PANCASILA",
-              sifat: "W",
-              sks: 2,
-              semester: 1,
-            },
-            {
-              kode: "ST002",
-              nama: "PENDIDIKAN AGAMA",
-              sifat: "W",
-              sks: 2,
-              semester: 1,
-            },
-            {
-              kode: "ST003",
-              nama: "PENDIDIKAN AGAMA (NON MUSLIM)",
-              sifat: "W",
-              sks: 2,
-              semester: 1,
-            },
-            {
-              kode: "ST008",
-              nama: "BAHASA INGGRIS I",
-              sifat: "W",
-              sks: 2,
-              semester: 1,
-            },
-            {
-              kode: "ST068",
-              nama: "ALGORITMA DAN PEMROGRAMAN",
-              sifat: "W",
-              sks: 4,
-              semester: 1,
-            },
-            {
-              kode: "ST070",
-              nama: "ETIKA PROFESI",
-              sifat: "W",
-              sks: 2,
-              semester: 1,
-            },
-            {
-              kode: "ST081",
-              nama: "LOGIKA INFORMATIKA",
-              sifat: "W",
-              sks: 2,
-              semester: 1,
-            },
-            {
-              kode: "ST137",
-              nama: "KALKULUS",
-              sifat: "W",
-              sks: 2,
-              semester: 1,
-            },
-            {
-              kode: "ST138",
-              nama: "FOTOGRAFI",
-              sifat: "W",
-              sks: 2,
-              semester: 1,
-            },
-            {
-              kode: "ST139",
-              nama: "PENGANTAR ILMU KOMPUTER",
-              sifat: "W",
-              sks: 2,
-              semester: 1,
-            },
-            {
-              kode: "ST161",
-              nama: "ENTREPRENEURSHIP",
-              sifat: "W",
-              sks: 2,
-              semester: 1,
-            },
-            {
-              kode: "ST023",
-              nama: "MATEMATIKA DISKRET",
-              sifat: "W",
-              sks: 2,
-              semester: 3,
-            },
-            {
-              kode: "ST024",
-              nama: "BAHASA INGGRIS III",
-              sifat: "W",
-              sks: 2,
-              semester: 3,
-            },
-            {
-              kode: "ST046",
-              nama: "INTERAKSI MANUSIA DAN KOMPUTER",
-              sifat: "W",
-              sks: 2,
-              semester: 3,
-            },
-            {
-              kode: "ST073",
-              nama: "JARINGAN KOMPUTER",
-              sifat: "W",
-              sks: 4,
-              semester: 3,
-            },
-            {
-              kode: "ST094",
-              nama: "ORGANISASI & ARSITEKTUR KOMPUTER",
-              sifat: "W",
-              sks: 2,
-              semester: 3,
-            },
-            {
-              kode: "ST095",
-              nama: "MULTIMEDIA",
-              sifat: "W",
-              sks: 2,
-              semester: 3,
-            },
-            {
-              kode: "ST122",
-              nama: "PEMROGRAMAN LANJUT",
-              sifat: "W",
-              sks: 4,
-              semester: 3,
-            },
-            {
-              kode: "ST151",
-              nama: "MIKROKONTROLER",
-              sifat: "W",
-              sks: 4,
-              semester: 3,
-            },
-            {
-              kode: "ST162",
-              nama: "SISTEM BASIS DATA",
-              sifat: "W",
-              sks: 2,
-              semester: 3,
-            },
-            {
-              kode: "ST044",
-              nama: "METODE NUMERIK",
-              sifat: "W",
-              sks: 4,
-              semester: 5,
-            },
-            {
-              kode: "ST045",
-              nama: "KECERDASAN BUATAN",
-              sifat: "W",
-              sks: 2,
-              semester: 5,
-            },
-            {
-              kode: "ST063",
-              nama: "REKAYASA PERANGKAT LUNAK",
-              sifat: "W",
-              sks: 4,
-              semester: 5,
-            },
-            {
-              kode: "ST078",
-              nama: "DATA MINING",
-              sifat: "P",
-              sks: 2,
-              semester: 5,
-            },
-            {
-              kode: "ST088",
-              nama: "PROGRAM APLIKASI MOBILE",
-              sifat: "P",
-              sks: 2,
-              semester: 5,
-            },
-            {
-              kode: "ST096",
-              nama: "METODOLOGI PENELITIAN",
-              sifat: "W",
-              sks: 2,
-              semester: 5,
-            },
-            {
-              kode: "ST097",
-              nama: "PEMROGRAMAN WEB LANJUT",
-              sifat: "K",
-              sks: 4,
-              semester: 5,
-            },
-            {
-              kode: "ST101",
-              nama: "PERANCANGAN FILM KARTUN",
-              sifat: "K",
-              sks: 4,
-              semester: 5,
-            },
-            {
-              kode: "ST108",
-              nama: "E-COMMERCE",
-              sifat: "W",
-              sks: 2,
-              semester: 5,
-            },
-            {
-              kode: "ST117",
-              nama: "BROADCASTING",
-              sifat: "P",
-              sks: 2,
-              semester: 5,
-            },
-            {
-              kode: "ST127",
-              nama: "JARINGAN KOMPUTER III",
-              sifat: "K",
-              sks: 4,
-              semester: 5,
-            },
-            {
-              kode: "ST132",
-              nama: "INFRASTRUKTUR WEB DAN INTERNET",
-              sifat: "P",
-              sks: 2,
-              semester: 5,
-            },
-            {
-              kode: "ST136",
-              nama: "CONCEPT ART",
-              sifat: "P",
-              sks: 2,
-              semester: 5,
-            },
-            {
-              kode: "ST141",
-              nama: "TEKNOLOGI JARINGAN NIRKABEL",
-              sifat: "P",
-              sks: 2,
-              semester: 5,
-            },
-            {
-              kode: "ST150",
-              nama: "KEPEMIMPINAN",
-              sifat: "W",
-              sks: 2,
-              semester: 5,
-            },
-            {
-              kode: "ST053",
-              nama: "SKRIPSI",
-              sifat: "W",
-              sks: 6,
-              semester: 7,
-            },
-          ],
+          mataKuliah: [],
+          kodeMataKuliahWajibNegara:["ST120","ST002","ST003","ST090","ST001"],
+          sksLulus:0,
+          sksTidakLulus:0,
+          sksNilaiD:0,
+          prosentaseSksNilaiD:0,
+          sksKurang:0,
+          sksWajib:0,
+          mataKuliahWajibNegara:[]
         },
         methods: {
-          mataKuliahOrdered() {
-            return this.mataKuliah.sort((a, b) => a.semester - b.semester )
-          },
+          analyze,
           onFileUploaded(e) {
             const file = e.target.files[0];
             const reader = new FileReader();
             var data = "";
             if(file){ this.file = true }
-            reader.onload = e => this.processFile(e.target.result);
+            reader.onload = e => this.csvJSON(e.target.result);
             reader.readAsText(file);
             
           },
-          processFile(data){
-            var _data = data.replace(/(?:\\[rn]|[\r\n]+)+[0-9]|(?:\\[rn]|[\r\n]+)+[0-9][0-9]|(?:\\[rn]|[\r\n]+)+[0-9][0-9][0-9]/g,"").split(",")
-            this.totalSKS = 0;
-            this.minimalC = [];
-            nilaiDmaksimalSKSMatkul = 0
-            nilaiDmaksimalSKS = 0
-            _data.forEach((d,index)=>{
-                this.mataKuliah.forEach((e,index2)=>{
-                    if(e.kode == d){
-                        var _index = parseInt(index)+4
-                        this.mataKuliah[index2].nilai = _data[_index].replace(/[0-9]+/g,"").replace(" ","")
-                        this.totalSKS += this.mataKuliah[index2].sks
+          csvJSON(csv){
+            var lines=csv.split("\n"); this.mataKuliah = [];
+            var headers=lines[0].replace("\r","").replace(" ","_").split(",");
 
-                        // maksimal 20 SKS untuk nilai D
-                        if(this.mataKuliah[index2].nilai == "D"){
-                            this.nilaiDmaksimalSKSMatkul += 1
-                            this.nilaiDmaksimalSKS += this.mataKuliah[index2].sks
-                        }
-                    } 
-                    
-                    //  minimal C : ST090, ST120, ST002/ST003, ST001, ST053
-                    if(e.kode == "ST090" || e.kode == "ST120" || e.kode == "ST001" || e.kode == "ST053" || e.kode == "ST002" && this.mataKuliah[index2].nilai || e.kode == "ST003" && this.mataKuliah[index2].nilai){
-                        if(!e.nilai && this.minimalC.includes(this.mataKuliah[index2]) == false){
-                            if(this.groupNilai.includes(this.mataKuliah[index2].nilai) == false){
-                                this.minimalC.push(this.mataKuliah[index2])
-                            }
-                        }
-                    } 
-                })
-            })
-            this.mataKuliahOrdered()
-            console.log(this.minimalC)
-        }
+            for(var i=1;i<lines.length;i++){
+
+                var obj = {};
+                var currentline=lines[i].replace("\r","").split(",");
+
+                for(var j=0;j<headers.length;j++){
+                    obj[headers[j]] = currentline[j];
+                }
+
+                this.mataKuliah.push(obj);
+
+            }
+            analyze(this.mataKuliah);
+          }
         },
       });
+
+      function analyze(data){
+        var totalSks = 0;
+        var sksTidakLulus = 0;
+        var sksD = 0;
+        var sksWajib = 0;
+        var matkulNegaraAll=[];
+        data.forEach(element => {
+          var matkulNegara = []
+          totalSks += parseInt(element.Sks);
+            if(element.Nilai==="E"){
+              sksTidakLulus += parseInt(element.Sks);
+            }
+            if(element.Nilai==="D"){
+              sksD += parseInt(element.Sks);
+            }
+            if(element.Sifat==="Wajib"){
+              sksWajib += parseInt(element.Sks);
+            }
+            if(app.kodeMataKuliahWajibNegara.includes(element.Kode)){
+              matkulNegara = {kode:element.Kode,
+                    matkul:element.Mata_Kuliah,
+                    nilai:element.Nilai
+                  }
+              if(element.Nilai==="E" || element.Nilai==="D" || element.Nilai==="" ){
+                matkulNegara.status = "Tidak lulus";
+              }else{
+                matkulNegara.status = "Lulus";
+              }
+              matkulNegaraAll.push(matkulNegara);
+            }
+        });
+        var sksLulus =  totalSks - sksTidakLulus;
+        var sksKurang = 144-sksLulus;
+        var prosentaseD = sksD/sksLulus*100;
+        app.sksLulus = sksLulus;
+        app.sksTidakLulus = sksTidakLulus;
+        app.sksNilaiD = prosentaseD;
+        app.prosentaseSksNilaiD = Math.round(prosentaseD);
+        app.sksKurang = sksKurang;
+        app.mataKuliahWajibNegara = matkulNegaraAll;
+        app.sksWajib = sksWajib;
+      }
     </script>
   </body>
 </html>
