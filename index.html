@@ -78,12 +78,12 @@
             <th>Nilai</th>
           </tr>
           <tr v-for="(n,idx) in mataKuliah">
-            <td class="text-center">{{ n.No }}</td>
-            <td class="text-center">{{ n.Kode }}</td>
-            <td>{{ n.Mata_Kuliah  }}</td>
-            <td class="text-center">{{ n.Sifat }}</td>
-            <td class="text-center">{{ n.Sks  }}</td>
-            <td class="text-center" v-bind:class="{'bg-danger text-white':n.Nilai=='E','bg-warning text-white':n.Nilai=='D'}">{{ n.Nilai}}</td>
+            <td class="text-center">{{ n.no }}</td>
+            <td class="text-center">{{ n.kode }}</td>
+            <td>{{ n.mata_kuliah  }}</td>
+            <td class="text-center">{{ n.sifat }}</td>
+            <td class="text-center">{{ n.sks  }}</td>
+            <td class="text-center" v-bind:class="{'bg-danger text-white':n.nilai=='E','bg-warning text-white':n.nilai=='D'}">{{ n.nilai}}</td>
           </tr>
         </table>
       </div>
@@ -200,14 +200,14 @@
 
             for(var i=1;i<lines.length;i++){
                 if(lines[i]===""){
-                console.log("continue")
                   continue;
                 }
                 var obj = {};
                 var currentline=lines[i].replace("\r","").split(",");
 
                 for(var j=0;j<headers.length;j++){
-                    obj[headers[j]] = currentline[j];
+                    var key = headers[j].toLowerCase();
+                    obj[key] = currentline[j];
                 }
 
                 this.mataKuliah.push(obj);
@@ -226,22 +226,22 @@
         var matkulNegaraAll=[];
         data.forEach(element => {
           var matkulNegara = []
-          totalSks += parseInt(element.Sks);
-            if(element.Nilai==="E"){
-              sksTidakLulus += parseInt(element.Sks);
+          totalSks += parseInt(element.sks);
+            if(element.nilai==="E"){
+              sksTidakLulus += parseInt(element.sks);
             }
-            if(element.Nilai==="D"){
-              sksD += parseInt(element.Sks);
+            if(element.nilai==="D"){
+              sksD += parseInt(element.sks);
             }
-            if(element.Sifat==="Wajib"){
-              sksWajib += parseInt(element.Sks);
+            if(element.sifat==="Wajib"){
+              sksWajib += parseInt(element.sks);
             }
-            if(app.kodeMataKuliahWajibNegara.includes(element.Kode)){
-              matkulNegara = {kode:element.Kode,
-                    matkul:element.Mata_Kuliah,
-                    nilai:element.Nilai
+            if(app.kodeMataKuliahWajibNegara.includes(element.kode)){
+              matkulNegara = {kode:element.kode,
+                    matkul:element.mata_kuliah,
+                    nilai:element.nilai
                   }
-              if(element.Nilai==="E" || element.Nilai==="D" || element.Nilai==="" ){
+              if(element.nilai==="E" || element.nilai==="D" || element.nilai==="" ){
                 matkulNegara.status = "Tidak lulus";
               }else{
                 matkulNegara.status = "Lulus";
