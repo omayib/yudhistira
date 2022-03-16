@@ -196,14 +196,21 @@
           csvJSON(csv){
             var lines=csv.split("\n"); 
             this.mataKuliah = [];
-            var headers=lines[0].replace("\r","").replace(" ","_").split(",");
+            var containsComma=lines[0].includes(",");
+            var headers;
+            if(containsComma){
+              headers = lines[0].replace("\r","").replace(" ","_").split(",");
+            }else{
+              headers = lines[0].replace("\r","").replace(" ","_").split(";");
+            }
 
             for(var i=1;i<lines.length;i++){
                 if(lines[i]===""){
                   continue;
                 }
                 var obj = {};
-                var currentline=lines[i].replace("\r","").split(",");
+                var row = lines[i].replace("\r","")
+                var currentline= containsComma ? row.split(",") : row.split(";") ;
 
                 for(var j=0;j<headers.length;j++){
                     var key = headers[j].toLowerCase();
