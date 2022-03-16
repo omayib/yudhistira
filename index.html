@@ -154,6 +154,12 @@
           </tr>
         </table>
       </div>
+      
+      <div class="my-3 p-3 bg-body rounded shadow-sm" v-show="file">
+        <button 
+        class="btn btn-danger"
+        v-on:click="onClickButtonSave">SIMPAN PDF</button>
+      </div>
     </main>
     <script>
         // 1. Total SKS minimal 144 SKS
@@ -183,6 +189,7 @@
           mataKuliahWajibNegara:[]
         },
         methods: {
+          onClickButtonSave,
           analyze,
           onFileUploaded(e) {
             const file = e.target.files[0];
@@ -266,6 +273,9 @@
         app.sksKurang = sksKurang;
         app.mataKuliahWajibNegara = matkulNegaraAll;
         app.sksWajib = sksWajib;
+      }
+      function onClickButtonSave() {
+        window.print();
       }
     </script>
   </body>
