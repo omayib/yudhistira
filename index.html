@@ -40,6 +40,7 @@
       crossorigin="anonymous"
     ></script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://unpkg.com/vue-tree-table-component"></script>
     <!-- end of js here -->
   </head>
   <body>
@@ -49,112 +50,163 @@
       >
         <!-- <img class="me-3" src="/docs/5.1/assets/brand/bootstrap-logo-white.svg" alt="" width="48" height="38"> -->
         <div class="lh-1">
-          <h1 class="h1 mb-0 text-white lh-1">Simulasi Nilai Mahasiswa</h1>
-          <small>Application Name Yudhistira © Prodi Informatika Universitas Amikom Yogyakarta</small>
+          <h1 class="h1 mb-0 text-white lh-1">Analisis Capaian Mahasiswa</h1><br>
+          <small>Application Name ORBIT Objective Analyzer (formerly Yudhistira) © Prodi Informatika Universitas Amikom Yogyakarta</small>
         </div>
       </div>
 
       <div class="my-3 p-3 bg-body rounded shadow-sm">
-        <p class="pb-3 mb-0 small lh-sm border-bottom">
-          <strong class="d-block text-gray-dark"
-            >Upload Transkrip Nilai Anda (csv) :</strong
-          >
-          Transkrip Nilai merupakan koleksi nilai Anda seluruh semester. Bukan KHS (Kartu Hasil Studi) yang ditampilkan per-semester.
-          <br>Silakan upload Transkrip Nilai anda pada form di bawah ini :
-          <input type="file" class="form-control" v-on:change="onFileUploaded">
-          
-        </p>
+        <div>
+          Nama Lengkap(*)
+          <input  class="form-control" v-on:change="onNameChanged">
+          NIM(*)
+          <input  class="form-control" v-on:change="onNimChanged">
+          <p class="pb-3 mb-0 small lh-sm border-bottom">
+            <strong class="d-block text-gray-dark"
+              >Upload Transkrip Nilai Anda (csv) :</strong
+            >
+            Transkrip Nilai merupakan koleksi nilai Anda seluruh semester. Bukan KHS (Kartu Hasil Studi) yang ditampilkan per-semester.
+            <br>Silakan upload Transkrip Nilai anda pada form di bawah ini :
+            <input type="file" class="form-control" v-on:change="onFileUploaded">
+          </p>
+        </div>
       </div>
-
-      <div class="my-3 p-3 bg-body rounded shadow-sm" v-show="file">
-        <h6 class="border-bottom pb-2 mb-0">Data Nilai</h6>
-        <table class="table table-bordered">
-          <tr>
-            <th width="100px">No</th>
-            <th width="100px">Kode</th>
-            <th>Mata Kuliah</th>
-            <th>Sifat</th>
-            <th>SKS</th>
-            <th>Nilai</th>
-          </tr>
-          <tr v-for="(n,idx) in mataKuliah">
-            <td class="text-center">{{ n.no }}</td>
-            <td class="text-center">{{ n.kode }}</td>
-            <td>{{ n.mata_kuliah  }}</td>
-            <td class="text-center">{{ n.sifat }}</td>
-            <td class="text-center">{{ n.sks  }}</td>
-            <td class="text-center" v-bind:class="{'bg-danger text-white':n.nilai=='E','bg-warning text-white':n.nilai=='D'}">{{ n.nilai}}</td>
-          </tr>
-        </table>
-      </div>
-      <div class="my-3 p-3 bg-body rounded shadow-sm" v-show="file">
-        <h6 class="border-bottom pb-2 mb-0">Kesimpulan</h6>
-        <table class="table table-bordered">
+      <!-- START DIV TRANSKRIP MATKUL -->
+      <div>
+        <div class="my-3 p-3 bg-body rounded shadow-sm" v-show="file">
+          <h6 class="border-bottom pb-2 mb-0">Data Nilai</h6>
+          <table class="table table-bordered">
             <tr>
-              <th width="20%" style="background-color:white">SKS Wajib</th>
-              <th width="20%" style="background-color:greenyellow">SKS Lulus</th>
-              <th width="20%" style="background-color:red">SKS TIDAK Lulus</th>
-              <th width="20%" style="background-color:yellow">SKS Nilai D</th>
-              <th width="20%" style="background-color:black; color: white;">SKS Kurang</th>
+              <th width="100px">No</th>
+              <th width="100px">Kode</th>
+              <th>Mata Kuliah</th>
+              <th>Sifat</th>
+              <th>SKS</th>
+              <th>Nilai</th>
             </tr>
-            <tr>
-              <td class="text-center">
-                  <b>{{sksWajib}}</b>
-              </td>
-              <td class="text-center">
-                  <b>{{sksLulus}}</b>
-              </td>
-              <td class="text-center">
-                <b>{{ sksTidakLulus }}</b>
-              </td>
-              <td class="text-center">
-                <b>{{ prosentaseSksNilaiD }} %</b>
-              </td>
-              <td class="text-center">
-                <b>{{ sksKurang }} </b>
-              </td>
-            </tr>
-            <tr>
-              <td class="text-center">
-                  <span v-if="sksWajib < 120">SKS sifat wajib yang sudah ditempuh minimal 120 SKS.</span>
-                  <span v-else>Memenuhi syarat minimal SKS Wajib sebesar 120 SKS.</span>
-              </td>
-                <td class="text-center">
-                    <span v-if="totalSKS <= 144">Belum memenuhi dari total minimal yaitu 144 SKS.</span>
-                    <span v-else>Memenuhi syarat minimal 144 SKS.</span>
-                </td>
-                <td class="text-center">
-                    <span>Jumlah SKS yang tidak Lulus. Wajib diulang atau harus di hapus saat Yudisium</span>
-                </td>
-                <td class="text-center">
-                    <span v-if="prosentaseSksNilaiD > 25" class="text-danger">Mata kuliah denngan nilai D melebihi syarat batas maksimal. Tidak boleh lebih dari 25% dari total SKS yang lulus.</span>
-                    <span v-else>Mata kuliah memenuhi syarat.</span>
-                </td>
-                <td class="text-center">
-                   <span >Jumlah SKS yang harus Anda tempuh berikutnya.</span>
-                </td>
+            <tr v-for="(n,idx) in mataKuliah">
+              <td class="text-center">{{ n.no }}</td>
+              <td class="text-center">{{ n.kode }}</td>
+              <td>{{ n.mata_kuliah  }}</td>
+              <td class="text-center">{{ n.sifat }}</td>
+              <td class="text-center">{{ n.sks  }}</td>
+              <td class="text-center" v-bind:class="{'bg-danger text-white':n.nilai=='E','bg-warning text-white':n.nilai=='D'}">{{ n.nilai}}</td>
             </tr>
           </table>
+        </div>
+        <div class="my-3 p-3 bg-body rounded shadow-sm" v-show="file">
+          <h6 class="border-bottom pb-2 mb-0">Kesimpulan</h6>
+          <table class="table table-bordered">
+              <tr>
+                <th width="20%" style="background-color:white">SKS Wajib</th>
+                <th width="20%" style="background-color:greenyellow">SKS Lulus</th>
+                <th width="20%" style="background-color:red">SKS TIDAK Lulus</th>
+                <th width="20%" style="background-color:yellow">SKS Nilai D</th>
+                <th width="20%" style="background-color:black; color: white;">SKS Kurang</th>
+              </tr>
+              <tr>
+                <td class="text-center">
+                    <b>{{sksWajib}}</b>
+                </td>
+                <td class="text-center">
+                    <b>{{sksLulus}}</b>
+                </td>
+                <td class="text-center">
+                  <b>{{ sksTidakLulus }}</b>
+                </td>
+                <td class="text-center">
+                  <b>{{ prosentaseSksNilaiD }} %</b>
+                </td>
+                <td class="text-center">
+                  <b>{{ sksKurang }} </b>
+                </td>
+              </tr>
+              <tr>
+                <td class="text-center">
+                    <span v-if="sksWajib < 120">SKS sifat wajib yang sudah ditempuh minimal 120 SKS.</span>
+                    <span v-else>Memenuhi syarat minimal SKS Wajib sebesar 120 SKS.</span>
+                </td>
+                  <td class="text-center">
+                      <span v-if="totalSKS <= 144">Belum memenuhi dari total minimal yaitu 144 SKS.</span>
+                      <span v-else>Memenuhi syarat minimal 144 SKS.</span>
+                  </td>
+                  <td class="text-center">
+                      <span>Jumlah SKS yang tidak Lulus. Wajib diulang atau harus di hapus saat Yudisium</span>
+                  </td>
+                  <td class="text-center">
+                      <span v-if="prosentaseSksNilaiD > 25" class="text-danger">Mata kuliah denngan nilai D melebihi syarat batas maksimal. Tidak boleh lebih dari 25% dari total SKS yang lulus.</span>
+                      <span v-else>Mata kuliah memenuhi syarat.</span>
+                  </td>
+                  <td class="text-center">
+                    <span >Jumlah SKS yang harus Anda tempuh berikutnya.</span>
+                  </td>
+              </tr>
+            </table>
+        </div>
+        <div class="my-3 p-3 bg-body rounded shadow-sm" v-show="file">
+          <h6 class="border-bottom pb-2 mb-0">Matakuliah Wajib Negara</h6>
+          <p> Nilai matakuliah wajib dari Negara, minimal bernilai C</p>
+          <table class="table table-bordered">
+            <tr>
+              <th width="100px">Kode</th>
+              <th>Mata Kuliah</th>
+              <th>Nilai</th>
+              <th>Keterangan</th>
+            </tr>
+            <tr v-for="(n,idx) in mataKuliahWajibNegara">
+              <td class="text-center">{{ n.kode }}</td>
+              <td>{{ n.matkul  }}</td>
+              <td class="text-center" v-bind:class="{'bg-danger text-white':n.nilai=='E','bg-warning text-white':n.nilai=='D'}">{{ n.nilai}}</td>
+              <td class="text-center">{{ n.status  }}</td>
+            </tr>
+          </table>
+        </div>
       </div>
-      <div class="my-3 p-3 bg-body rounded shadow-sm" v-show="file">
-        <h6 class="border-bottom pb-2 mb-0">Matakuliah Wajib Negara</h6>
-        <p> Nilai matakuliah wajib dari Negara, minimal bernilai C</p>
-        <table class="table table-bordered">
-          <tr>
-            <th width="100px">Kode</th>
-            <th>Mata Kuliah</th>
-            <th>Nilai</th>
-            <th>Keterangan</th>
-          </tr>
-          <tr v-for="(n,idx) in mataKuliahWajibNegara">
-            <td class="text-center">{{ n.kode }}</td>
-            <td>{{ n.matkul  }}</td>
-            <td class="text-center" v-bind:class="{'bg-danger text-white':n.nilai=='E','bg-warning text-white':n.nilai=='D'}">{{ n.nilai}}</td>
-            <td class="text-center">{{ n.status  }}</td>
-          </tr>
-        </table>
+      <!-- END DIV TRANSKRIP MATKUL -->
+      <!-- START DIV CAPAIAN -->
+      <div>
+        <div class="my-3 p-3 bg-body rounded shadow-sm" v-show="file">
+          <h6 class="border-bottom pb-2 mb-0">Analisis Capaian Pembelajaran</h6>
+          <p> Berdasarkan buku kurikulum Tahun 2021</p>
+          <table class="table table-bordered">
+            <tr>
+              <th width="100px">Kode</th>
+              <th>Capaian</th>
+              <th>Prosentase</th>
+            </tr>
+            <tr v-for="(n,idx) in resultResumeAnalisisCpl">
+              <td class="text-center">{{ n.name }}</td>
+              <td>{{ n.desc  }}</td>
+              <td class="text-center">{{ n.capaian  }} %</td>
+            </tr>
+          </table>
+        </div>
       </div>
-      
+      <div>
+        <div class="my-3 p-3 bg-body rounded shadow-sm" v-show="file">
+          <h6 class="border-bottom pb-2 mb-0">Analisis Capaian Pembelajaran</h6>
+          <p> Berdasarkan buku kurikulum Tahun 2021</p>
+          <div  v-for="cpl in resultResumeAnalisisCpl" >
+            <div style="background: #FDFD96 ; padding: 10px; border: 1px solid #d4d4d4;">
+                {{ cpl.name }} ({{ cpl.capaian  }} %)<br>
+                {{cpl.desc}}
+            </div>
+            <table class="table table-bordered">
+              <tr>
+                <th width="100px">Kode</th>
+                <th>Matakuliah</th>
+                <th>Nilai</th>
+              </tr>
+              <tr v-for="m in cpl.daftar_matkul[0]">
+                <td class="text-center">{{ m.kode }}</td>
+                <td>{{ m.name  }}</td>
+                <td class="text-center">{{ m.nilai  }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+      <!-- END DIV CAPAIAN -->
       <div class="my-3 p-3 bg-body rounded shadow-sm" v-show="file">
         <button 
         class="btn btn-danger"
@@ -171,6 +223,7 @@
       var app = new Vue({
         el: "#mainapp",
         data: {
+          name:"",nim:"",
           dataFile: "",
           file: "",
           totalSKS: 0,
@@ -186,9 +239,19 @@
           prosentaseSksNilaiD:0,
           sksKurang:0,
           sksWajib:0,
-          mataKuliahWajibNegara:[]
+          mataKuliahWajibNegara:[],
+          resultResumeAnalisisCpl:[],
+          resultDetailAnalisisCpl:[]
         },
         methods: {
+          onNameChanged(e){
+            this.name=e.target.value;
+            console.log(this.name);
+          },
+          onNimChanged(e){
+            this.nim=e.target.value;
+            console.log(this.nim);
+          },
           onClickButtonSave,
           analyze,
           onFileUploaded(e) {
@@ -227,11 +290,49 @@
                 this.mataKuliah.push(obj);
 
             }
+            analyzeCapaian(this.mataKuliah);
             analyze(this.mataKuliah);
           }
-        },
+        }
       });
-
+      
+      function analyzeCapaian(transkrips){
+        var listCpl=[{"name":"CPLP1","desc":"Bertaqwa kepada Tuhan Yang Maha Esa serta menunjukkan sikap peduli, menghargai, dan bertanggung jawab dalam kehidupan kampus dan bermasyarakat","matkul":["ST001","ST002","ST003","ST070","ST160","ST082","ST150","ST045","ST090","ST120","ST161"]},{"name":"CPLP2","desc":"Memiliki sikap mental positif, profesional, dan integritas dalam mempelajari ilmu pengetahuan maupun teknologi","matkul":["ST070","ST008","ST137","ST138","ST081","ST013","ST016","ST019","ST015","ST014","ST024","ST095","ST082","ST129","ST096","ST044","ST063","ST150","ST108","ST119","ST050","ST175","ST155","ST052","ST170","ST176","ST177","ST161"]},{"name":"CPLP3","desc":"memiliki pandangan terbuka, kritis dan profesional dalam menyelesaikan masalah menggunakan inovasi digital bidang informatika","matkul":["ST001","ST002","ST003","ST008","ST092","ST068","ST013","ST046","ST162","ST091","ST096","ST063","ST150","ST090","ST119","ST120","ST050","ST087","ST053","ST163","ST175","ST167","ST166","ST165","ST052","ST178","ST174","ST175","ST176","ST177","ST161"]},{"name":"CPLP4","desc":"Mampu menyusun dokumentasi dan evaluasi serta publikasi pemikiran atau hasil karya yang diciptakan","matkul":["ST070","ST138","ST016","ST024","ST120","ST053","ST052"]},{"name":"CPLP5","desc":"Mampu menganalisis, merancang dan mengevaluasi perangkat lunak pada berbagai platform untuk memenuhi kebutuhan industri atau masyarakat","matkul":["ST094","ST021","ST015","ST046","ST122","ST091","ST084","ST063","ST116","ST097","ST088","ST118","ST142","ST163","ST167","ST165","ST175"]},{"name":"CPLP6","desc":"Mampu menggunakan dan mengoptimalisasi teknik akuisisi data , analisa data, pengolahan data untuk menyelesaikan masalah penelitian atau industri","matkul":["ST137","ST092","ST023","ST162","ST129","ST044","ST045","ST078","ST152","ST153","ST168","ST169","ST164","ST154","ST151","ST167","ST179"]},{"name":"CPLP7","desc":"Mampu menganalisis, mengevaluasi dan merancang sistem jaringan komputer sesuai kebutuhan pengguna","matkul":["ST139","ST073","ST037","ST127","ST141","ST132","ST133","ST143"]},{"name":"CPLP8","desc":"Mampu membuat produk digital dengan menerapkan prinsip-prinsip multimedia untuk menyelesaikan permasalahan di masyarakat","matkul":["ST095","ST029","ST114","ST101","ST117","ST136","ST126","ST135","ST173","ST166","ST172","ST171","ST169","ST145","ST174"]},{"name":"CPLP9","desc":"mampu menjelaskan metode analisis, perancangan sistem, pengujian perangkat lunak pada berbagai platform untuk memenuhi kebutuhan industri atau masyarakat","matkul":["ST139","ST068","ST081","ST021","ST015","ST046","ST122","ST091","ST084","ST063","ST045","ST119","ST116","ST097","ST088","ST118","ST165","ST170","ST178","ST175"]},{"name":"CPLP10","desc":"mampu menjelaskan konsep dan pengetahuan teknik akuisisi data , analisa data, pengolahan data untuk menyelesaikan masalah","matkul":["ST094","ST019","ST014","ST160","ST023","ST044","ST108","ST050","ST087","ST078","ST152","ST153","ST168","ST164","ST151","ST170","ST178","ST177"]},{"name":"CPLP11","desc":"Mampu menjelaskan metodologi dalam membangun jaringan komputer sesuai kebutuhan pengguna","matkul":["ST139","ST014","ST160","ST073","ST037","ST127","ST141","ST132","ST133","ST143","ST154","ST179"]},{"name":"CPLP12","desc":"Mampu menjelaskan prinsip-prinsip multimedia dalam pembuatan produk digital","matkul":["ST095","ST029","ST142","ST114","ST101","ST117","ST136","ST126","ST135","ST173","ST166","ST172","ST171","ST169","ST145","ST174"]}];
+        var listMatkul=[{"kode":"ST001","namamatkul":"PENDIDIKAN PANCASILA"},{"kode":"ST002","namamatkul":"PENDIDIKAN AGAMA"},{"kode":"ST003","namamatkul":"PENDIDIKAN AGAMA (NON MUSLIM)"},{"kode":"ST008","namamatkul":"BAHASA INGGRIS I"},{"kode":"ST011","namamatkul":"MANAJEMEN UMUM"},{"kode":"ST068","namamatkul":"ALGORITMA DAN PEMROGRAMAN"},{"kode":"ST070","namamatkul":"ETIKA PROFESI"},{"kode":"ST081","namamatkul":"LOGIKA  INFORMATIKA"},{"kode":"ST137","namamatkul":"KALKULUS"},{"kode":"ST138","namamatkul":"FOTOGRAFI"},{"kode":"ST139","namamatkul":"PENGANTAR ILMU KOMPUTER"},{"kode":"ST161","namamatkul":"ENTREPRENEURSHIP"},{"kode":"ST013","namamatkul":"LINGKUNGAN BISNIS"},{"kode":"ST014","namamatkul":"KOMUNIKASI DATA"},{"kode":"ST015","namamatkul":"STRUKTUR DATA"},{"kode":"ST016","namamatkul":"BAHASA INGGRIS II"},{"kode":"ST017","namamatkul":"TEKNIK DIGITAL"},{"kode":"ST019","namamatkul":"SISTEM OPERASI"},{"kode":"ST021","namamatkul":"PEMROGRAMAN"},{"kode":"ST029","namamatkul":"KOMPUTER GRAFIS"},{"kode":"ST105","namamatkul":"KALKULUS LANJUT"},{"kode":"ST123","namamatkul":"HARDWARE/ SOFTWARE I"},{"kode":"ST160","namamatkul":"HARDWARE/SOFTWARE I"},{"kode":"ST023","namamatkul":"MATEMATIKA DISKRET"},{"kode":"ST024","namamatkul":"BAHASA INGGRIS III"},{"kode":"ST046","namamatkul":"INTERAKSI MANUSIA DAN KOMPUTER"},{"kode":"ST073","namamatkul":"JARINGAN KOMPUTER"},{"kode":"ST094","namamatkul":"ORGANISASI & ARSITEKTUR KOMPUTER"},{"kode":"ST095","namamatkul":"MULTIMEDIA"},{"kode":"ST122","namamatkul":"PEMROGRAMAN LANJUT"},{"kode":"ST125","namamatkul":"PRAKTIKUM HARDWARE/ SOFTWARE II"},{"kode":"ST151","namamatkul":"MIKROKONTROLER"},{"kode":"ST162","namamatkul":"SISTEM BASIS DATA"},{"kode":"ST172","namamatkul":"SISTEM BASIS DATA"},{"kode":"ST035","namamatkul":"SISTEM INFORMASI MANAJEMEN"},{"kode":"ST037","namamatkul":"JARINGAN KOMPUTER II"},{"kode":"ST043","namamatkul":"SISTEM BERKAS DAN KEAMANAN DATA"},{"kode":"ST045","namamatkul":"KECERDASAN BUATAN"},{"kode":"ST082","namamatkul":"KECAKAPAN ANTAR PERSONAL"},{"kode":"ST084","namamatkul":"PEMROGRAMAN WEB"},{"kode":"ST086","namamatkul":"PRAK PEMROGRAMAN LANJUT"},{"kode":"ST091","namamatkul":"ANALISIS DESAIN SISTEM INFORMASI"},{"kode":"ST092","namamatkul":"ALJABAR LINIER DAN MATRIKS"},{"kode":"ST114","namamatkul":"MULTIMEDIA LANJUT"},{"kode":"ST116","namamatkul":"PEMROGRAMAN BASIS DATA"},{"kode":"ST121","namamatkul":"STATISTIK"},{"kode":"ST129","namamatkul":"RISET OPERASI"},{"kode":"ST140","namamatkul":"E-BISNIS"},{"kode":"ST149","namamatkul":"ANALISIS DAN DESAIN SISTEM INFORMASI"},{"kode":"ST152","namamatkul":"BIG DATA & PREDICTIVE ANALYTICS"},{"kode":"ST044","namamatkul":"METODE NUMERIK"},{"kode":"ST063","namamatkul":"REKAYASA PERANGKAT LUNAK"},{"kode":"ST078","namamatkul":"DATA MINING"},{"kode":"ST088","namamatkul":"PROGRAM APLIKASI MOBILE"},{"kode":"ST096","namamatkul":"METODOLOGI PENELITIAN"},{"kode":"ST097","namamatkul":"PEMROGRAMAN WEB LANJUT"},{"kode":"ST101","namamatkul":"PERANCANGAN FILM KARTUN"},{"kode":"ST102","namamatkul":"PEMROGRAMAN BERBASIS CLIENT/SERVER"},{"kode":"ST108","namamatkul":"E-COMMERCE"},{"kode":"ST117","namamatkul":"BROADCASTING"},{"kode":"ST120","namamatkul":"BAHASA INDONESIA"},{"kode":"ST127","namamatkul":"JARINGAN KOMPUTER III"},{"kode":"ST132","namamatkul":"INFRASTRUKTUR WEB DAN INTERNET"},{"kode":"ST134","namamatkul":"DESAIN KARAKTER, PROP, DAN SETTING"},{"kode":"ST136","namamatkul":"CONCEPT ART"},{"kode":"ST141","namamatkul":"TEKNOLOGI JARINGAN NIRKABEL"},{"kode":"ST144","namamatkul":"MEDIA INTERAKTIF"},{"kode":"ST150","namamatkul":"KEPEMIMPINAN"},{"kode":"ST153","namamatkul":"BIG DATA & PREDICTIVE ANALYTICS LANJUT"},{"kode":"ST154","namamatkul":"INTERNET OF THINGS"},{"kode":"ST158","namamatkul":"ENTERPRISE RESOURCES PLANNING"},{"kode":"ST159","namamatkul":"DATA MINING DAN DATA WAREHOUSE"},{"kode":"ST163","namamatkul":"INOVASI PEMBAYARAN DIGITAL"},{"kode":"ST164","namamatkul":"KECERDASAN BUATAN LANJUT"},{"kode":"ST168","namamatkul":"BIG DATA DAN DATA MINING"},{"kode":"ST170","namamatkul":"REKAYASA PERANGKAT LUNAK"},{"kode":"ST171","namamatkul":"VIDEO DAN BROADCASTING"},{"kode":"ST173","namamatkul":"MEDIA INTERAKTIF"},{"kode":"ST174","namamatkul":"TEKNOLOGI JARINGAN NIRKABEL"},{"kode":"ST050","namamatkul":"MANAJEMEN STRATEGIK"},{"kode":"ST052","namamatkul":"TUGAS PRAKTEK"},{"kode":"ST058","namamatkul":"BAHASA INGGRIS IV"},{"kode":"ST079","namamatkul":"ENTERPRISE RESOURCE PLANNING"},{"kode":"ST087","namamatkul":"MANAJEMEN SUMBERDAYA IT"},{"kode":"ST090","namamatkul":"PENDIDIKAN KEWARGANEGARAAN"},{"kode":"ST118","namamatkul":"BASIS DATA LANJUT"},{"kode":"ST119","namamatkul":"KEWIRAUSAHAAN"},{"kode":"ST126","namamatkul":"FILM KARTUN 3D"},{"kode":"ST133","namamatkul":"KEAMANAN JARINGAN"},{"kode":"ST135","namamatkul":"SPECIAL EFFECT"},{"kode":"ST142","namamatkul":"TEKNOLOGI GAME"},{"kode":"ST143","namamatkul":"PERANCANGAN JARINGAN"},{"kode":"ST145","namamatkul":"VIRTUAL REALITY"},{"kode":"ST146","namamatkul":"ETHNIC RELATIONS"},{"kode":"ST147","namamatkul":"FUNDAMENTAL OF DIGITAL MEDIA DESIGN"},{"kode":"ST148","namamatkul":"ENGLISH FOR PROFESSIONAL COMMUNICATION"},{"kode":"ST155","namamatkul":"DIGITAL BUSINESS"},{"kode":"ST165","namamatkul":"PROYEK PEMROGRAMAN"},{"kode":"ST166","namamatkul":"PROYEK GAME"},{"kode":"ST167","namamatkul":"PROYEK DATA MINING"},{"kode":"ST175","namamatkul":"KOMUNIKASI DAN NEGOSIASI"},{"kode":"ST053","namamatkul":"SKRIPSI"},{"kode":"ST080","namamatkul":"PERANCANGAN WEB & INTERNET"},{"kode":"ST156","namamatkul":"AUDIO DESAIN"},{"kode":"ST157","namamatkul":"KOMUNIKASI BISNIS DAN NEGOSIASI"}];
+        var summaryCpl=[];
+        listCpl.forEach(e=>{
+            var itemSummaryCPL = {"name":"","desc":"","capaian":0,"daftar_matkul":[]};
+            var jmlSudahDiambil=0;
+            var daftarMatkulPerCPL=[];
+            e.matkul.forEach(m=>{
+                var namaMatkul="";    
+                listMatkul.forEach(mk=>{
+                    if(mk.kode==m){
+                        namaMatkul=mk.namamatkul;
+                    }
+                });
+        
+                var takeout= m+" "+namaMatkul+ " belum lulus";
+                var takoutObj={"kode":m,"name":namaMatkul,"nilai":""};
+                transkrips.forEach(t=>{
+                    if(m===t.kode){
+                        takeout=m+" "+t.mata_kuliah+" | "+t.nilai;
+                        takoutObj={"kode":m,"name":t.mata_kuliah,"nilai":t.nilai};
+                        jmlSudahDiambil++;
+                    }
+                })
+                daftarMatkulPerCPL.push(takoutObj);
+            });
+            var jmlMatkulperCpl=e.matkul.length;
+            var prosentase=jmlSudahDiambil/jmlMatkulperCpl*100;
+            itemSummaryCPL.name=e.name;
+            itemSummaryCPL.desc=e.desc;
+            itemSummaryCPL.capaian=prosentase.toFixed(2);
+            itemSummaryCPL.daftar_matkul.push(daftarMatkulPerCPL);
+            summaryCpl.push(itemSummaryCPL);
+        })
+        app.resultResumeAnalisisCpl=summaryCpl;
+      }
       function analyze(data){
         var totalSks = 0;
         var sksTidakLulus = 0;
